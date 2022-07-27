@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 )
@@ -31,20 +30,23 @@ func NewGracefulShutdownServer(shutdown <-chan os.Signal, server Server) *Gracef
 }
 
 func (g *GracefulShutdownServer) Listen(ctx context.Context) error {
+	listenErr := make(chan error)
+
 	// fly free, listen and serve
 	go func() {
 		if err := g.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
-			//todo: i think this might be buggy, this would kill the go routine but not the server, which is what we probably want here
+			listenErr <- err
 		}
 	}()
 
-	// wait for the shutdown signal
-	<-g.shutdown
-
-	// attempt to shutdown before ctx finishes (e.g a timeout)
-	if err := g.server.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+	select {
+	case err := <-listenErr:
 		return err
+	case <-g.shutdown:
+		// attempt to shutdown before ctx finishes (e.g a timeout)
+		if err := g.server.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+			return err
+		}
 	}
 
 	return nil
