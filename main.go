@@ -14,7 +14,7 @@ const (
 )
 
 func main() {
-	// create some kind of context with a timeout so we don't just wait forever to shutdown
+	// create some kind of context with a timeout, so we don't just wait forever to shutdown
 	applicationContext, _ := context.WithTimeout(context.Background(), serverShutdownTimeout)
 
 	// notify of interrupt signals on a channel
