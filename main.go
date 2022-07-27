@@ -21,7 +21,10 @@ func main() {
 	osSignal := make(chan os.Signal, 1)
 	signal.Notify(osSignal, os.Interrupt)
 
-	server := NewGracefulShutdownServer(osSignal, http.HandlerFunc(aSlowHandler))
+	server := NewGracefulShutdownServer(
+		osSignal,
+		&http.Server{Addr: addr, Handler: http.HandlerFunc(aSlowHandler)},
+	)
 
 	if err := server.Listen(applicationContext); err != nil {
 		// this will typically be if our responses aren't written before the ctx deadline, not much can be done

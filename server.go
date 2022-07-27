@@ -11,15 +11,22 @@ const (
 	addr = ":8080"
 )
 
-type GracefulShutdownServer struct {
-	shutdown <-chan os.Signal
-	server   http.Server
-}
+type (
+	Server interface {
+		ListenAndServe() error
+		Shutdown(ctx context.Context) error
+	}
 
-func NewGracefulShutdownServer(shutdown <-chan os.Signal, handler http.Handler) *GracefulShutdownServer {
+	GracefulShutdownServer struct {
+		shutdown <-chan os.Signal
+		server   Server
+	}
+)
+
+func NewGracefulShutdownServer(shutdown <-chan os.Signal, server Server) *GracefulShutdownServer {
 	return &GracefulShutdownServer{
 		shutdown: shutdown,
-		server:   http.Server{Addr: addr, Handler: handler},
+		server:   server,
 	}
 }
 
