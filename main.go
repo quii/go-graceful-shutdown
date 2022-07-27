@@ -2,27 +2,22 @@ package main
 
 import (
 	"context"
+	"github.com/quii/graceful-shutdown/gracefulshutdown"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
 	"time"
 )
 
 const (
 	serverShutdownTimeout = 20 * time.Second
+	addr                  = ":8080"
 )
 
 func main() {
 	// create some kind of context with a timeout, so we don't just wait forever to shutdown
 	applicationContext, _ := context.WithTimeout(context.Background(), serverShutdownTimeout)
 
-	// notify of interrupt signals on a channel
-	osSignal := make(chan os.Signal, 1)
-	signal.Notify(osSignal, os.Interrupt)
-
-	server := NewGracefulShutdownServer(
-		osSignal,
+	server := gracefulshutdown.NewDefaultServer(
 		&http.Server{Addr: addr, Handler: http.HandlerFunc(aSlowHandler)},
 	)
 

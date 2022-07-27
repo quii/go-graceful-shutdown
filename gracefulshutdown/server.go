@@ -1,13 +1,9 @@
-package main
+package gracefulshutdown
 
 import (
 	"context"
 	"net/http"
 	"os"
-)
-
-const (
-	addr = ":8080"
 )
 
 type (
@@ -22,11 +18,15 @@ type (
 	}
 )
 
-func NewGracefulShutdownServer(shutdown <-chan os.Signal, server Server) *GracefulShutdownServer {
+func NewServer(shutdown <-chan os.Signal, server Server) *GracefulShutdownServer {
 	return &GracefulShutdownServer{
 		shutdown: shutdown,
 		server:   server,
 	}
+}
+
+func NewDefaultServer(server Server) *GracefulShutdownServer {
+	return NewServer(NewInterruptSignalChannel(), server)
 }
 
 func (g *GracefulShutdownServer) Listen(ctx context.Context) error {
