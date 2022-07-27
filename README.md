@@ -12,6 +12,7 @@ Graceful shutdown!
 
 - Listen to interrupt signal
 - Rather than killing the program straight away, instead call [http.Server.Shutdown](https://pkg.go.dev/net/http#Server.Shutdown) which will let requests, connections etc drain _before_ killing the server
+- This should mean in most cases, the server will finish the currently running requests before stopping
 
 There are a few examples of this out there, I thought I'd roll my own so i could understand it better and structure it in a non-confusing way, hopefully
 
