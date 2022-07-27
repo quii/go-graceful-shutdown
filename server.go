@@ -5,12 +5,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 const (
-	serverShutdownTimeout = 20 * time.Second
-	addr                  = ":8080"
+	addr = ":8080"
 )
 
 type GracefulShutdownServer struct {
@@ -26,18 +24,20 @@ func NewGracefulShutdownServer(shutdown <-chan os.Signal, handler http.Handler) 
 }
 
 func (g *GracefulShutdownServer) Listen(ctx context.Context) error {
+	// fly free, listen and serve
 	go func() {
 		if err := g.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
 	}()
 
-	osCall := <-g.shutdown
-	log.Printf("system call: %+v", osCall)
+	// wait for the shutdown signal
+	<-g.shutdown
 
-	err := g.server.Shutdown(ctx)
-	if err == http.ErrServerClosed {
-		return nil
+	// attempt to shutdown before ctx finishes (e.g a timeout)
+	if err := g.server.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+		return err
 	}
-	return err
+
+	return nil
 }
