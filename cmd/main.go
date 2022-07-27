@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/quii/graceful-shutdown/gracefulshutdown"
+	gracefulshutdown "github.com/quii/graceful-shutdown"
 	"log"
 	"net/http"
 	"time"

@@ -2,8 +2,8 @@ package gracefulshutdown_test
 
 import (
 	"context"
+	"github.com/quii/graceful-shutdown"
 	"github.com/quii/graceful-shutdown/assert"
-	"github.com/quii/graceful-shutdown/gracefulshutdown"
 	"os"
 	"testing"
 	"time"
