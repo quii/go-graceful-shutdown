@@ -28,6 +28,7 @@ func (g *GracefulShutdownServer) Listen(ctx context.Context) error {
 	go func() {
 		if err := g.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
+			//todo: i think this might be buggy, this would kill the go routine but not the server, which is what we probably want here
 		}
 	}()
 
