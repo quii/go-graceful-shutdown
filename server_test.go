@@ -42,9 +42,12 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 	server := gracefulshutdown.NewServer(interrupt, serverSpy)
 	go server.Listen(context.Background())
 
+	// verify we call listen on the delegate server
 	time.Sleep(50 * time.Millisecond)
 	assert.Equal(t, serverSpy.ListenCalls, 1)
+	assert.Equal(t, serverSpy.ShutdownCalls, 0)
 
+	// verify we call shutdown on the delegate server when an interrupt is made
 	interrupt <- os.Interrupt
 	time.Sleep(50 * time.Millisecond)
 	assert.Equal(t, serverSpy.ShutdownCalls, 1)
