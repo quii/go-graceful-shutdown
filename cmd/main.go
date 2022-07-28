@@ -17,9 +17,9 @@ func main() {
 	// create some kind of context with a timeout, so we don't just wait forever to shutdown
 	applicationContext, _ := context.WithTimeout(context.Background(), serverShutdownTimeout)
 
-	server := gracefulshutdown.NewDefaultServer(
-		&http.Server{Addr: addr, Handler: http.HandlerFunc(aSlowHandler)},
-	)
+	myNormalGoHTTPServer := &http.Server{Addr: addr, Handler: http.HandlerFunc(aSlowHandler)}
+	
+	server := gracefulshutdown.NewDefaultServer(myNormalGoHTTPServer)
 
 	if err := server.Listen(applicationContext); err != nil {
 		// this will typically be if our responses aren't written before the ctx deadline, not much can be done
