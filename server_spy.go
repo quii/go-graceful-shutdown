@@ -16,8 +16,8 @@ type SpyServer struct {
 
 func NewSpyServer() *SpyServer {
 	return &SpyServer{
-		listened: make(chan struct{}),
-		shutdown: make(chan struct{}),
+		listened: make(chan struct{}, 1),
+		shutdown: make(chan struct{}, 1),
 	}
 }
 
