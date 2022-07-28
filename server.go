@@ -7,29 +7,29 @@ import (
 )
 
 type (
-	Server interface {
+	HTTPServer interface {
 		ListenAndServe() error
 		Shutdown(ctx context.Context) error
 	}
 
-	GracefulShutdownServer struct {
+	Server struct {
 		shutdown <-chan os.Signal
-		server   Server
+		server   HTTPServer
 	}
 )
 
-func NewServer(shutdown <-chan os.Signal, server Server) *GracefulShutdownServer {
-	return &GracefulShutdownServer{
+func NewServer(shutdown <-chan os.Signal, server HTTPServer) *Server {
+	return &Server{
 		shutdown: shutdown,
 		server:   server,
 	}
 }
 
-func NewDefaultServer(server Server) *GracefulShutdownServer {
+func NewDefaultServer(server HTTPServer) *Server {
 	return NewServer(NewInterruptSignalChannel(), server)
 }
 
-func (g *GracefulShutdownServer) Listen(ctx context.Context) error {
+func (g *Server) Listen(ctx context.Context) error {
 	listenErr := make(chan error)
 
 	// fly free, listen and serve
