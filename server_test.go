@@ -25,7 +25,11 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			return nil
 		}
 
-		go server.Listen(context.Background())
+		go func() {
+			if err := server.Listen(context.Background()); err != nil {
+				t.Error(err)
+			}
+		}()
 
 		// verify we call listen on the delegate server
 		spyServer.AssertListened(t)
