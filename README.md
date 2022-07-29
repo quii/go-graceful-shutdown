@@ -22,4 +22,4 @@ Almost everything boils down to a decorator pattern in the end. You provide my l
 
 ## Example usage
 
-See [https://github.com/quii/go-graceful-shutdown/blob/main/cmd/main.go](`/cmd/main.go`)
+See [cmd/main.go](https://github.com/quii/go-graceful-shutdown/blob/main/cmd/main.go)
