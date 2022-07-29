@@ -1,0 +1,15 @@
+run:
+  go: 1.18
+
+linters:
+  # Enable extra linters besides the default ones
+  enable:
+    - goimports
+    - godot
+    - goconst
+    - govet
+    - gofmt
+    - unconvert
+    - misspell
+    - whitespace
+    - revive

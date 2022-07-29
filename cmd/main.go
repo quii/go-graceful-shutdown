@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	gracefulshutdown "github.com/quii/graceful-shutdown"
 	"log"
 	"net/http"
 	"time"
+
+	gracefulshutdown "github.com/quii/graceful-shutdown"
 )
 
 const (

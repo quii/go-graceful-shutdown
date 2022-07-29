@@ -2,8 +2,9 @@ package gracefulshutdown
 
 import (
 	"context"
-	"github.com/quii/graceful-shutdown/assert"
 	"testing"
+
+	"github.com/quii/graceful-shutdown/assert"
 )
 
 type SpyServer struct {

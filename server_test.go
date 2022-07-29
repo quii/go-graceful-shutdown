@@ -3,11 +3,12 @@ package gracefulshutdown_test
 import (
 	"context"
 	"errors"
-	"github.com/quii/graceful-shutdown"
-	"github.com/quii/graceful-shutdown/assert"
 	"os"
 	"testing"
 	"time"
+
+	gracefulshutdown "github.com/quii/graceful-shutdown"
+	"github.com/quii/graceful-shutdown/assert"
 )
 
 func TestGracefulShutdownServer_Listen(t *testing.T) {
@@ -85,5 +86,4 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			t.Error("timed out waiting for shutdown error to be propagated")
 		}
 	})
-
 }
