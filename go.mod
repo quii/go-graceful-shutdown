@@ -1,3 +1,3 @@
-module github.com/quii/graceful-shutdown
+module github.com/quii/go-graceful-shutdown
 
 go 1.18

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/quii/graceful-shutdown/assert"
+	"github.com/quii/go-graceful-shutdown/assert"
 )
 
 type SpyServer struct {

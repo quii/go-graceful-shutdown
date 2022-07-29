@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	gracefulshutdown "github.com/quii/graceful-shutdown"
+	gracefulshutdown "github.com/quii/go-graceful-shutdown"
 )
 
 const (
