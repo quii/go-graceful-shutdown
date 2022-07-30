@@ -17,7 +17,7 @@ type (
 	// Server wraps around a HTTPServer and will gracefully shutdown when it receives a shutdown signal.
 	Server struct {
 		shutdown <-chan os.Signal
-		server   HTTPServer
+		delegate HTTPServer
 		timeout  time.Duration
 	}
 )
@@ -26,7 +26,7 @@ type (
 func NewServer(shutdown <-chan os.Signal, server HTTPServer, timeout time.Duration) *Server {
 	return &Server{
 		shutdown: shutdown,
-		server:   server,
+		delegate: server,
 		timeout:  timeout,
 	}
 }
@@ -37,28 +37,37 @@ func NewDefaultServer(server HTTPServer, timeout time.Duration) *Server {
 }
 
 // ListenAndServe will call the ListenAndServe function of the delegate HTTPServer you passed in at construction. On a signal being sent to the shutdown signal provided in the constructor, it will call the server's Shutdown method to attempt to gracefully shutdown.
-func (g *Server) ListenAndServe() error {
-	listenErr := make(chan error)
-
-	// fly free, listen and serve
-	go func() {
-		if err := g.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			listenErr <- err
-		}
-	}()
-
+func (s *Server) ListenAndServe() error {
 	select {
-	case err := <-listenErr:
+	case err := <-s.delegateListenAndServe():
 		return err
-	case <-g.shutdown:
-		ctx, cancel := context.WithTimeout(context.Background(), g.timeout)
-		defer cancel()
-
-		// attempt to shutdown before ctx finishes (e.g a timeout)
-		if err := g.server.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+	case <-s.shutdown:
+		if err := s.shutdownDelegate(); err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (s *Server) delegateListenAndServe() chan error {
+	listenErr := make(chan error)
+
+	go func() {
+		if err := s.delegate.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			listenErr <- err
+		}
+	}()
+
+	return listenErr
+}
+
+func (s *Server) shutdownDelegate() error {
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
+
+	if err := s.delegate.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+		return err
+	}
 	return nil
 }
