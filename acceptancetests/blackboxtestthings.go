@@ -1,9 +1,10 @@
-package cmd
+package acceptancetests
 
 import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -67,6 +68,15 @@ func waitForServerListening(port string) {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
+}
+
+func GetAndDiscardResponse(url string) error {
+	res, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	res.Body.Close()
+	return nil
 }
 
 type LogWriter struct {

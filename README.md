@@ -42,9 +42,9 @@ Almost everything boils down to a decorator pattern in the end. You provide my l
 
 ## Example usage and testing
 
-See [cmd/withgracefulshutdown/main.go](https://github.com/quii/go-graceful-shutdown/blob/main/cmd/withgracefulshutdown/main.go) for an example
+See [acceptancetests/withgracefulshutdown/main.go](https://github.com/quii/go-graceful-shutdown/blob/main/acceptancetests/withgracefulshutdown/main.go) for an example
 
-There are two binaries in this project with accompanying acceptance tests to verify the functionality. 
+There are two binaries in this project with accompanying acceptance tests to verify the functionality that live inside `/acceptancetests`.
 
 Both tests build the binaries, run them, fire a `HTTP GET` and then send an interrupt signal to tell the server to stop.
 

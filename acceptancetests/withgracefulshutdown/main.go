@@ -6,7 +6,7 @@ import (
 	"time"
 
 	gracefulshutdown "github.com/quii/go-graceful-shutdown"
-	"github.com/quii/go-graceful-shutdown/cmd"
+	"github.com/quii/go-graceful-shutdown/acceptancetests"
 )
 
 const (
@@ -14,7 +14,7 @@ const (
 )
 
 func main() {
-	httpServer := &http.Server{Addr: ":8080", Handler: http.HandlerFunc(cmd.SlowHandler)}
+	httpServer := &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
 
 	server := gracefulshutdown.NewDefaultServer(httpServer, serverShutdownTimeout)
 
