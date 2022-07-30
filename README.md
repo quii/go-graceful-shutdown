@@ -2,6 +2,9 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/quii/go-graceful-shutdown.svg)](https://pkg.go.dev/github.com/quii/go-graceful-shutdown)
 ![Pipeline](https://github.com/quii/go-graceful-shutdown/actions/workflows/pipeline.yaml/badge.svg)
 ![Lint](https://github.com/quii/go-graceful-shutdown/actions/workflows/golang-ci-lint.yaml/badge.svg)
+
+A wrapper for your Go HTTP server so that it will finish responding to in-flight requests on interrupt signals before shutting down.
+
 ```go
 func main() {
 	httpServer := &http.Server{Addr: ":8080", Handler: http.HandlerFunc(aSlowHandler)}
