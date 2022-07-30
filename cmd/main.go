@@ -15,15 +15,15 @@ const (
 )
 
 func main() {
-	// create some kind of context with a timeout, so we don't just wait forever to shutdown
-	applicationContext, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
+	// create a context with a timeout, so we don't just wait forever to shut down
+	ctx, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
 
-	myNormalGoHTTPServer := &http.Server{Addr: addr, Handler: http.HandlerFunc(aSlowHandler)}
+	httpServer := &http.Server{Addr: addr, Handler: http.HandlerFunc(aSlowHandler)}
 
-	server := gracefulshutdown.NewDefaultServer(myNormalGoHTTPServer)
+	server := gracefulshutdown.NewDefaultServer(httpServer)
 
-	if err := server.Listen(applicationContext); err != nil {
-		// this will typically be if our responses aren't written before the ctx deadline, not much can be done
+	if err := server.Listen(ctx); err != nil {
+		// this will typically happen if our responses aren't written before the ctx deadline, not much can be done
 		log.Fatalf("uh oh, didnt shutdown gracefully, some responses may have been lost %v", err)
 	}
 

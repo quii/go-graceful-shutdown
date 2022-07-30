@@ -15,7 +15,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 	t.Run("happy path, listen, wait for interrupt, shutdown gracefully", func(t *testing.T) {
 		var (
 			interrupt = make(chan os.Signal)
-			spyServer = gracefulshutdown.NewSpyServer()
+			spyServer = NewSpyServer()
 			server    = gracefulshutdown.NewServer(interrupt, spyServer)
 		)
 
@@ -43,7 +43,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 	t.Run("when listen fails, return error", func(t *testing.T) {
 		var (
 			interrupt = make(chan os.Signal)
-			spyServer = gracefulshutdown.NewSpyServer()
+			spyServer = NewSpyServer()
 			server    = gracefulshutdown.NewServer(interrupt, spyServer)
 			err       = errors.New("oh no")
 		)
@@ -61,7 +61,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		var (
 			interrupt = make(chan os.Signal)
 			errChan   = make(chan error)
-			spyServer = gracefulshutdown.NewSpyServer()
+			spyServer = NewSpyServer()
 			server    = gracefulshutdown.NewServer(interrupt, spyServer)
 			err       = errors.New("oh no")
 		)
