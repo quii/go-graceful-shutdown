@@ -1,0 +1,3 @@
+build:
+	golangci-lint run
+	go test -count=1 ./...

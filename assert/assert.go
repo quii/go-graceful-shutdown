@@ -20,6 +20,13 @@ func NoError(t testing.TB, err error) {
 	t.Fatalf("didnt expect an err, but got one %v", err)
 }
 
+func Error(t testing.TB, err error) {
+	t.Helper()
+	if err == nil {
+		t.Error("expected an error but didnt get one")
+	}
+}
+
 func SignalSent[T any](t testing.TB, signal <-chan T, signalName string) {
 	t.Helper()
 	select {
