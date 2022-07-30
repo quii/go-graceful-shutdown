@@ -42,12 +42,8 @@ func (s *Server) ListenAndServe() error {
 	case err := <-s.delegateListenAndServe():
 		return err
 	case <-s.shutdown:
-		if err := s.shutdownDelegate(); err != nil {
-			return err
-		}
+		return s.shutdownDelegate()
 	}
-
-	return nil
 }
 
 func (s *Server) delegateListenAndServe() chan error {
