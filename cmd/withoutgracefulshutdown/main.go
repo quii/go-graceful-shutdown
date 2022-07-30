@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	server := &http.Server{Addr: ":8081", Handler: http.HandlerFunc(cmd.ASlowHandler)}
+	server := &http.Server{Addr: ":8081", Handler: http.HandlerFunc(cmd.SlowHandler)}
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)

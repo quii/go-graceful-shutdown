@@ -14,7 +14,7 @@ const (
 )
 
 func main() {
-	httpServer := &http.Server{Addr: ":8080", Handler: http.HandlerFunc(cmd.ASlowHandler)}
+	httpServer := &http.Server{Addr: ":8080", Handler: http.HandlerFunc(cmd.SlowHandler)}
 
 	server := gracefulshutdown.NewDefaultServer(httpServer, serverShutdownTimeout)
 
