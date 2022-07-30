@@ -15,7 +15,7 @@ const (
 	binName = "without-graceful"
 )
 
-func TestGracefulShutdown(t *testing.T) {
+func TestNonGracefulShutdown(t *testing.T) {
 	deleteBinary, binPath, err := cmd.BuildBinary(binName)
 	if err != nil {
 		t.Fatal(err)
@@ -23,6 +23,7 @@ func TestGracefulShutdown(t *testing.T) {
 	t.Cleanup(deleteBinary)
 
 	sendInterrupt, err := cmd.RunServer(context.Background(), binPath)
+	assert.NoError(t, err)
 
 	// just check the server works before we shut things down
 	_, err = http.Get(url)
