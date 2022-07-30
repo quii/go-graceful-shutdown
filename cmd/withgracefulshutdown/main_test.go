@@ -24,6 +24,10 @@ func TestGracefulShutdown(t *testing.T) {
 
 	sendInterrupt, err := cmd.RunServer(context.Background(), binPath)
 
+	// just check the server works before we shut things down
+	_, err = http.Get(url)
+	assert.NoError(t, err)
+
 	// fire off a request, we know it is slow, and without graceful shutdown this would fail
 	errCh := make(chan error, 1)
 	go func() {
