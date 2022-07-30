@@ -36,9 +36,9 @@ Graceful shutdown!
 - Rather than killing the program straight away, instead call [http.Server.Shutdown](https://pkg.go.dev/net/http#Server.Shutdown) which will let requests, connections e.t.c drain _before_ killing the server
 - This should mean in most cases, the server will finish the currently running requests before stopping
 
-There are a few examples of this out there, I thought I'd roll my own so I could understand it better, and structure it in a non-confusing way, hopefully.
+There are a few examples of this out there, I thought I'd roll my own, so I could understand it better, and structure it in a non-confusing way, hopefully.
 
-Almost everything boils down to a decorator pattern in the end. You provide my library a `*http.Server` and it'll return you back a `*gracefulshutdown.Server`. Just call `Listen` instead of your normal `ListenAndServe`, and it'll gracefully shutdown on [an os signal](https://github.com/quii/go-graceful-shutdown/blob/main/signal.go#L11).
+Almost everything boils down to a decorator pattern in the end. You provide my library a `*http.Server` and it'll return you back a `*gracefulshutdown.Server`. Just call `ListenAndServe`, and it'll gracefully shutdown on [an os signal](https://github.com/quii/go-graceful-shutdown/blob/main/signal.go#L11).
 
 ## Example usage and testing
 

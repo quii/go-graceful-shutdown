@@ -30,7 +30,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		}
 
 		go func() {
-			if err := server.Listen(); err != nil {
+			if err := server.ListenAndServe(); err != nil {
 				t.Error(err)
 			}
 		}()
@@ -55,7 +55,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			return err
 		}
 
-		gotErr := server.Listen()
+		gotErr := server.ListenAndServe()
 
 		assert.Equal(t, gotErr.Error(), err.Error())
 	})
@@ -77,7 +77,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		}
 
 		go func() {
-			errChan <- server.Listen()
+			errChan <- server.ListenAndServe()
 		}()
 
 		interrupt <- os.Interrupt

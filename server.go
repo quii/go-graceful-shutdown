@@ -36,8 +36,8 @@ func NewDefaultServer(server HTTPServer, timeout time.Duration) *Server {
 	return NewServer(NewInterruptSignalChannel(), server, timeout)
 }
 
-// Listen will call the ListenAndServe function of the HTTPServer you pass in. On a signal being sent to the shutdown signal provided in the constructor, it will call the server's Shutdown method to attempt to gracefully shutdown.
-func (g *Server) Listen() error {
+// ListenAndServe will call the ListenAndServe function of the delegate HTTPServer you passed in at construction. On a signal being sent to the shutdown signal provided in the constructor, it will call the server's Shutdown method to attempt to gracefully shutdown.
+func (g *Server) ListenAndServe() error {
 	listenErr := make(chan error)
 
 	// fly free, listen and serve
