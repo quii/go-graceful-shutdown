@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
@@ -43,8 +42,8 @@ func BuildBinary(name string) (cleanup func(), cmdPath string, err error) {
 	return
 }
 
-func RunServer(ctx context.Context, path string, port string) (sendInterrupt func() error, err error) {
-	cmd := exec.CommandContext(ctx, path)
+func RunServer(path string, port string) (sendInterrupt func() error, err error) {
+	cmd := exec.Command(path)
 	cmd.Stderr = NewLogWriter()
 
 	if err := cmd.Start(); err != nil {

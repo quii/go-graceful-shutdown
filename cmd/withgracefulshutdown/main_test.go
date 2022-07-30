@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -23,7 +22,7 @@ func TestGracefulShutdown(t *testing.T) {
 	}
 	t.Cleanup(deleteBinary)
 
-	sendInterrupt, err := cmd.RunServer(context.Background(), binPath, port)
+	sendInterrupt, err := cmd.RunServer(binPath, port)
 	assert.NoError(t, err)
 
 	// just check the server works before we shut things down
@@ -31,15 +30,14 @@ func TestGracefulShutdown(t *testing.T) {
 	assert.NoError(t, err)
 
 	// fire off a request, we know it is slow, and without graceful shutdown this would fail
+	time.AfterFunc(50*time.Millisecond, func() {
+		assert.NoError(t, sendInterrupt())
+	})
 	errCh := make(chan error, 1)
 	go func() {
 		_, err = http.Get(url)
 		errCh <- err
 	}()
-
-	// give it a moment to fire the request and then send an interrupt
-	time.Sleep(50 * time.Millisecond)
-	assert.NoError(t, sendInterrupt())
 
 	select {
 	case err := <-errCh:
