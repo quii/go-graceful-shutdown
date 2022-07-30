@@ -1,7 +1,6 @@
 package gracefulshutdown_test
 
 import (
-	"context"
 	"errors"
 	"os"
 	"testing"
@@ -11,12 +10,16 @@ import (
 	"github.com/quii/go-graceful-shutdown/assert"
 )
 
+const (
+	timeout = 5 * time.Second
+)
+
 func TestGracefulShutdownServer_Listen(t *testing.T) {
 	t.Run("happy path, listen, wait for interrupt, shutdown gracefully", func(t *testing.T) {
 		var (
 			interrupt = make(chan os.Signal)
 			spyServer = NewSpyServer()
-			server    = gracefulshutdown.NewServer(interrupt, spyServer)
+			server    = gracefulshutdown.NewServer(interrupt, spyServer, timeout)
 		)
 
 		spyServer.ListenAndServeFunc = func() error {
@@ -27,7 +30,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		}
 
 		go func() {
-			if err := server.Listen(context.Background()); err != nil {
+			if err := server.Listen(); err != nil {
 				t.Error(err)
 			}
 		}()
@@ -44,7 +47,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		var (
 			interrupt = make(chan os.Signal)
 			spyServer = NewSpyServer()
-			server    = gracefulshutdown.NewServer(interrupt, spyServer)
+			server    = gracefulshutdown.NewServer(interrupt, spyServer, timeout)
 			err       = errors.New("oh no")
 		)
 
@@ -52,7 +55,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			return err
 		}
 
-		gotErr := server.Listen(context.Background())
+		gotErr := server.Listen()
 
 		assert.Equal(t, gotErr.Error(), err.Error())
 	})
@@ -62,7 +65,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			interrupt = make(chan os.Signal)
 			errChan   = make(chan error)
 			spyServer = NewSpyServer()
-			server    = gracefulshutdown.NewServer(interrupt, spyServer)
+			server    = gracefulshutdown.NewServer(interrupt, spyServer, timeout)
 			err       = errors.New("oh no")
 		)
 
@@ -74,7 +77,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		}
 
 		go func() {
-			errChan <- server.Listen(context.Background())
+			errChan <- server.Listen()
 		}()
 
 		interrupt <- os.Interrupt
