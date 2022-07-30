@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	url     = "http://localhost:8080"
+	port    = "8080"
+	url     = "http://localhost:" + port
 	binName = "graceful"
 )
 
@@ -22,7 +23,7 @@ func TestGracefulShutdown(t *testing.T) {
 	}
 	t.Cleanup(deleteBinary)
 
-	sendInterrupt, err := cmd.RunServer(context.Background(), binPath)
+	sendInterrupt, err := cmd.RunServer(context.Background(), binPath, port)
 	assert.NoError(t, err)
 
 	// just check the server works before we shut things down

@@ -43,14 +43,14 @@ func BuildBinary(name string) (cleanup func(), cmdPath string, err error) {
 	return
 }
 
-func RunServer(ctx context.Context, path string) (sendInterrupt func() error, err error) {
+func RunServer(ctx context.Context, path string, port string) (sendInterrupt func() error, err error) {
 	cmd := exec.CommandContext(ctx, path)
 	cmd.Stderr = NewLogWriter()
 
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("cannot run temp converter: %s", err)
 	}
-	waitForServerListening()
+	waitForServerListening(port)
 
 	sendInterrupt = func() error {
 		return cmd.Process.Signal(os.Interrupt)
@@ -59,9 +59,9 @@ func RunServer(ctx context.Context, path string) (sendInterrupt func() error, er
 	return sendInterrupt, nil
 }
 
-func waitForServerListening() {
+func waitForServerListening(port string) {
 	for i := 0; i < 20; i++ {
-		conn, _ := net.Dial("tcp", net.JoinHostPort("localhost", "8080"))
+		conn, _ := net.Dial("tcp", net.JoinHostPort("localhost", port))
 		if conn != nil {
 			conn.Close()
 			break
