@@ -10,16 +10,12 @@ import (
 	"github.com/quii/go-graceful-shutdown/assert"
 )
 
-const (
-	timeout = 5 * time.Second
-)
-
 func TestGracefulShutdownServer_Listen(t *testing.T) {
 	t.Run("happy path, listen, wait for interrupt, shutdown gracefully", func(t *testing.T) {
 		var (
 			interrupt = make(chan os.Signal)
 			spyServer = NewSpyServer()
-			server    = gracefulshutdown.NewServer(interrupt, spyServer, timeout)
+			server    = gracefulshutdown.NewServer(spyServer, gracefulshutdown.WithShutdownSignal(interrupt))
 		)
 
 		spyServer.ListenAndServeFunc = func() error {
@@ -47,7 +43,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		var (
 			interrupt = make(chan os.Signal)
 			spyServer = NewSpyServer()
-			server    = gracefulshutdown.NewServer(interrupt, spyServer, timeout)
+			server    = gracefulshutdown.NewServer(spyServer, gracefulshutdown.WithShutdownSignal(interrupt))
 			err       = errors.New("oh no")
 		)
 
@@ -65,7 +61,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			interrupt = make(chan os.Signal)
 			errChan   = make(chan error)
 			spyServer = NewSpyServer()
-			server    = gracefulshutdown.NewServer(interrupt, spyServer, timeout)
+			server    = gracefulshutdown.NewServer(spyServer, gracefulshutdown.WithShutdownSignal(interrupt))
 			err       = errors.New("oh no")
 		)
 

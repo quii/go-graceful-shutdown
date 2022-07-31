@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const (
+	k8sDefaultTerminationGracePeriod = 30 * time.Second
+)
+
 type (
 	// HTTPServer is an abstraction of something that listens for connections and do HTTP things. 99% of the time, you'll pass in a net/http/Server.
 	HTTPServer interface {
@@ -20,20 +24,37 @@ type (
 		delegate HTTPServer
 		timeout  time.Duration
 	}
+
+	ServerOption func(server *Server)
 )
 
-// NewServer returns a Server, it allows you to send your own channel of signals you wish to shutdown gracefully on.
-func NewServer(shutdown <-chan os.Signal, server HTTPServer, timeout time.Duration) *Server {
-	return &Server{
-		shutdown: shutdown,
-		delegate: server,
-		timeout:  timeout,
+// WithShutdownSignal WithShutdownSignals allows you to listen to whatever signals you like, rather than the default ones defined in signal.go.
+func WithShutdownSignal(shutdownSignal <-chan os.Signal) ServerOption {
+	return func(server *Server) {
+		server.shutdown = shutdownSignal
 	}
 }
 
-// NewDefaultServer wraps your HTTPServer with graceful shutdown against a "sensible" list of signals to listen to.
-func NewDefaultServer(server HTTPServer, timeout time.Duration) *Server {
-	return NewServer(NewInterruptSignalChannel(), server, timeout)
+// WithTimeout lets you set your own timeout for waiting for graceful shutdown. By default this is set to 30 seconds (k8s' default TerminationGracePeriod).
+func WithTimeout(timeout time.Duration) ServerOption {
+	return func(server *Server) {
+		server.timeout = timeout
+	}
+}
+
+// NewServer returns a Server that can gracefully shutdown on shutdown signals
+func NewServer(server HTTPServer, options ...ServerOption) *Server {
+	s := &Server{
+		delegate: server,
+		timeout:  k8sDefaultTerminationGracePeriod,
+		shutdown: NewInterruptSignalChannel(),
+	}
+
+	for _, option := range options {
+		option(s)
+	}
+
+	return s
 }
 
 // ListenAndServe will call the ListenAndServe function of the delegate HTTPServer you passed in at construction. On a signal being sent to the shutdown signal provided in the constructor, it will call the server's Shutdown method to attempt to gracefully shutdown.
