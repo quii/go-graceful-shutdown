@@ -25,6 +25,7 @@ type (
 		timeout  time.Duration
 	}
 
+	// ServerOption provides ways of configuring Server.
 	ServerOption func(server *Server)
 )
 

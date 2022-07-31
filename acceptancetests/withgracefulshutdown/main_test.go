@@ -25,24 +25,14 @@ func TestGracefulShutdown(t *testing.T) {
 	assert.NoError(t, err)
 
 	// just check the server works before we shut things down
-	assert.NoError(t, acceptancetests.GetAndDiscardResponse(url))
+	assert.CanGet(t, url)
 
 	// fire off a request, we know it is slow, and without graceful shutdown this would fail
 	time.AfterFunc(50*time.Millisecond, func() {
 		assert.NoError(t, sendInterrupt())
 	})
-	errCh := make(chan error, 1)
-	go func() {
-		errCh <- acceptancetests.GetAndDiscardResponse(url)
-	}()
-
-	select {
-	case err := <-errCh:
-		assert.NoError(t, err)
-	case <-time.After(3 * time.Second):
-		t.Error("didnt get an error after 3s")
-	}
+	assert.CanGet(t, url)
 
 	// after interrupt, the server should be shutdown, and no more requests will work
-	assert.Error(t, acceptancetests.GetAndDiscardResponse(url))
+	assert.CantGet(t, url)
 }
