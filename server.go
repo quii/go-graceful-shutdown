@@ -47,7 +47,7 @@ func NewServer(server HTTPServer, options ...ServerOption) *Server {
 	s := &Server{
 		delegate: server,
 		timeout:  k8sDefaultTerminationGracePeriod,
-		shutdown: NewInterruptSignalChannel(),
+		shutdown: newInterruptSignalChannel(),
 	}
 
 	for _, option := range options {
