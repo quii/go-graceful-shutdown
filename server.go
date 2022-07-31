@@ -42,7 +42,7 @@ func WithTimeout(timeout time.Duration) ServerOption {
 	}
 }
 
-// NewServer returns a Server that can gracefully shutdown on shutdown signals
+// NewServer returns a Server that can gracefully shutdown on shutdown signals.
 func NewServer(server HTTPServer, options ...ServerOption) *Server {
 	s := &Server{
 		delegate: server,
