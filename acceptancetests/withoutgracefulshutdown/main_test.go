@@ -9,21 +9,16 @@ import (
 )
 
 const (
-	port    = "8081"
-	url     = "http://localhost:" + port
-	binName = "without-graceful"
+	port = "8081"
+	url  = "http://localhost:" + port
 )
 
 func TestNonGracefulShutdown(t *testing.T) {
-	deleteBinary, binPath, err := acceptancetests.BuildBinary(binName)
+	cleanup, sendInterrupt, err := acceptancetests.LaunchTestProgram(port)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(deleteBinary)
-
-	sendInterrupt, kill, err := acceptancetests.RunServer(binPath, port)
-	t.Cleanup(kill)
-	assert.NoError(t, err)
+	t.Cleanup(cleanup)
 
 	// just check the server works before we shut things down
 	assert.CanGet(t, url)

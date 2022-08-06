@@ -3,6 +3,7 @@ package acceptancetests
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"os/exec"
@@ -15,8 +16,8 @@ const (
 	baseBinName = "temp-testbinary"
 )
 
-func BuildBinary(name string) (cleanup func(), cmdPath string, err error) {
-	binName := name + "-" + baseBinName
+func LaunchTestProgram(port string) (cleanup func(), sendInterrupt func() error, err error) {
+	binName := randomString(10) + "-" + baseBinName
 
 	if runtime.GOOS == "windows" {
 		binName += ".exe"
@@ -25,24 +26,34 @@ func BuildBinary(name string) (cleanup func(), cmdPath string, err error) {
 	build := exec.Command("go", "build", "-o", binName)
 
 	if err := build.Run(); err != nil {
-		return nil, "", fmt.Errorf("cannot build tool %s: %s", binName, err)
+		return nil, nil, fmt.Errorf("cannot build tool %s: %s", binName, err)
 	}
 
 	dir, err := os.Getwd()
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 
-	cmdPath = filepath.Join(dir, binName)
+	cmdPath := filepath.Join(dir, binName)
+
+	sendInterrupt, kill, err := runServer(cmdPath, port)
 
 	cleanup = func() {
+		if kill != nil {
+			kill()
+		}
 		os.Remove(binName)
 	}
 
-	return
+	if err != nil {
+		cleanup() // even though it's not listening correctly, the program could still be running
+		return nil, nil, err
+	}
+
+	return cleanup, sendInterrupt, nil
 }
 
-func RunServer(path string, port string) (sendInterrupt func() error, kill func(), err error) {
+func runServer(path string, port string) (sendInterrupt func() error, kill func(), err error) {
 	cmd := exec.Command(path)
 	cmd.Stderr = NewLogWriter()
 
@@ -50,19 +61,17 @@ func RunServer(path string, port string) (sendInterrupt func() error, kill func(
 		return nil, nil, fmt.Errorf("cannot run temp converter: %s", err)
 	}
 
-	if err := waitForServerListening(port); err != nil {
-		return nil, nil, err
+	kill = func() {
+		_ = cmd.Process.Kill()
 	}
 
 	sendInterrupt = func() error {
 		return cmd.Process.Signal(os.Interrupt)
 	}
 
-	kill = func() {
-		_ = cmd.Process.Kill()
-	}
+	err = waitForServerListening(port)
 
-	return sendInterrupt, kill, nil
+	return
 }
 
 func waitForServerListening(port string) error {
@@ -90,4 +99,14 @@ func NewLogWriter() *LogWriter {
 func (lw LogWriter) Write(p []byte) (n int, err error) {
 	lw.logger.Println(string(p))
 	return len(p), nil
+}
+
+func randomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
 }
