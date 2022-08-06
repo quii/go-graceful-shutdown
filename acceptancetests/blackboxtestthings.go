@@ -42,31 +42,39 @@ func BuildBinary(name string) (cleanup func(), cmdPath string, err error) {
 	return
 }
 
-func RunServer(path string, port string) (sendInterrupt func() error, err error) {
+func RunServer(path string, port string) (sendInterrupt func() error, kill func(), err error) {
 	cmd := exec.Command(path)
 	cmd.Stderr = NewLogWriter()
 
 	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("cannot run temp converter: %s", err)
+		return nil, nil, fmt.Errorf("cannot run temp converter: %s", err)
 	}
-	waitForServerListening(port)
+
+	if err := waitForServerListening(port); err != nil {
+		return nil, nil, err
+	}
 
 	sendInterrupt = func() error {
 		return cmd.Process.Signal(os.Interrupt)
 	}
 
-	return sendInterrupt, nil
+	kill = func() {
+		_ = cmd.Process.Kill()
+	}
+
+	return sendInterrupt, kill, nil
 }
 
-func waitForServerListening(port string) {
-	for i := 0; i < 20; i++ {
+func waitForServerListening(port string) error {
+	for i := 0; i < 30; i++ {
 		conn, _ := net.Dial("tcp", net.JoinHostPort("localhost", port))
 		if conn != nil {
 			conn.Close()
-			break
+			return nil
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
+	return fmt.Errorf("nothing seems to be listening on localhost:%s", port)
 }
 
 type LogWriter struct {

@@ -21,7 +21,8 @@ func TestNonGracefulShutdown(t *testing.T) {
 	}
 	t.Cleanup(deleteBinary)
 
-	sendInterrupt, err := acceptancetests.RunServer(binPath, port)
+	sendInterrupt, kill, err := acceptancetests.RunServer(binPath, port)
+	t.Cleanup(kill)
 	assert.NoError(t, err)
 
 	// just check the server works before we shut things down
