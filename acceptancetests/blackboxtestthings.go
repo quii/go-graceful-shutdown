@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"syscall"
 	"time"
 )
 
@@ -72,7 +73,7 @@ func runServer(binName string, port string) (sendInterrupt func() error, kill fu
 	}
 
 	sendInterrupt = func() error {
-		return cmd.Process.Signal(os.Interrupt)
+		return cmd.Process.Signal(syscall.SIGTERM)
 	}
 
 	err = waitForServerListening(port)
