@@ -106,7 +106,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		}
 
 		go func() {
-			if err := server.ListenAndServe(ctx); err != nil {
+			if err := server.ListenAndServe(ctx); err != nil && err != context.Canceled {
 				t.Error(err)
 			}
 		}()
