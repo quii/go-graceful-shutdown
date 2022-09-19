@@ -7,17 +7,19 @@ A wrapper for your Go HTTP server so that it will finish responding to in-flight
 
 ```go
 func main() {
-	httpServer := &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
+  var (
+    ctx        = context.Background()
+    httpServer = &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
+    server     = gracefulshutdown.NewServer(httpServer)
+  )
 
-	server := gracefulshutdown.NewServer(httpServer)
+  if err := server.ListenAndServe(ctx); err != nil {
+    // this will typically happen if our responses aren't written before the ctx deadline, not much can be done
+    log.Fatalf("uh oh, didnt shutdown gracefully, some responses may have been lost %v", err)
+  }
 
-	if err := server.ListenAndServe(); err != nil {
-		// this will typically happen if our responses aren't written before the ctx deadline, not much can be done
-		log.Fatalf("uh oh, didnt shutdown gracefully, some responses may have been lost %v", err)
-	}
-
-	// hopefully, you'll always see this instead
-	log.Println("shutdown gracefully! all responses were sent")
+  // hopefully, you'll always see this instead
+  log.Println("shutdown gracefully! all responses were sent")
 }
 ```
 

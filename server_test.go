@@ -1,6 +1,7 @@
 package gracefulshutdown_test
 
 import (
+	"context"
 	"errors"
 	"os"
 	"testing"
@@ -16,6 +17,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			interrupt = make(chan os.Signal)
 			spyServer = NewSpyServer()
 			server    = gracefulshutdown.NewServer(spyServer, gracefulshutdown.WithShutdownSignal(interrupt))
+			ctx       = context.Background()
 		)
 
 		spyServer.ListenAndServeFunc = func() error {
@@ -26,7 +28,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		}
 
 		go func() {
-			if err := server.ListenAndServe(); err != nil {
+			if err := server.ListenAndServe(ctx); err != nil {
 				t.Error(err)
 			}
 		}()
@@ -45,13 +47,14 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			spyServer = NewSpyServer()
 			server    = gracefulshutdown.NewServer(spyServer, gracefulshutdown.WithShutdownSignal(interrupt))
 			err       = errors.New("oh no")
+			ctx       = context.Background()
 		)
 
 		spyServer.ListenAndServeFunc = func() error {
 			return err
 		}
 
-		gotErr := server.ListenAndServe()
+		gotErr := server.ListenAndServe(ctx)
 
 		assert.Equal(t, gotErr.Error(), err.Error())
 	})
@@ -63,6 +66,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 			spyServer = NewSpyServer()
 			server    = gracefulshutdown.NewServer(spyServer, gracefulshutdown.WithShutdownSignal(interrupt))
 			err       = errors.New("oh no")
+			ctx       = context.Background()
 		)
 
 		spyServer.ListenAndServeFunc = func() error {
@@ -73,7 +77,7 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		}
 
 		go func() {
-			errChan <- server.ListenAndServe()
+			errChan <- server.ListenAndServe(ctx)
 		}()
 
 		interrupt <- os.Interrupt
@@ -84,5 +88,34 @@ func TestGracefulShutdownServer_Listen(t *testing.T) {
 		case <-time.After(500 * time.Millisecond):
 			t.Error("timed out waiting for shutdown error to be propagated")
 		}
+	})
+
+	t.Run("context passed in can trigger shutdown too", func(t *testing.T) {
+		var (
+			interrupt   = make(chan os.Signal)
+			spyServer   = NewSpyServer()
+			server      = gracefulshutdown.NewServer(spyServer, gracefulshutdown.WithShutdownSignal(interrupt))
+			ctx, cancel = context.WithCancel(context.Background())
+		)
+
+		spyServer.ListenAndServeFunc = func() error {
+			return nil
+		}
+		spyServer.ShutdownFunc = func() error {
+			return nil
+		}
+
+		go func() {
+			if err := server.ListenAndServe(ctx); err != nil {
+				t.Error(err)
+			}
+		}()
+
+		// verify we call listen on the delegate server
+		spyServer.AssertListened(t)
+
+		// verify we call shutdown on the delegate server when an interrupt is made
+		cancel()
+		spyServer.AssertShutdown(t)
 	})
 }

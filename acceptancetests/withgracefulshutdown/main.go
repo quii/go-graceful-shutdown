@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -9,11 +10,13 @@ import (
 )
 
 func main() {
-	httpServer := &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
+	var (
+		ctx        = context.Background()
+		httpServer = &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
+		server     = gracefulshutdown.NewServer(httpServer)
+	)
 
-	server := gracefulshutdown.NewServer(httpServer)
-
-	if err := server.ListenAndServe(); err != nil {
+	if err := server.ListenAndServe(ctx); err != nil {
 		// this will typically happen if our responses aren't written before the ctx deadline, not much can be done
 		log.Fatalf("uh oh, didnt shutdown gracefully, some responses may have been lost %v", err)
 	}

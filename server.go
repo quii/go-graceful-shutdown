@@ -59,12 +59,14 @@ func NewServer(server HTTPServer, options ...ServerOption) *Server {
 }
 
 // ListenAndServe will call the ListenAndServe function of the delegate HTTPServer you passed in at construction. On a signal being sent to the shutdown signal provided in the constructor, it will call the server's Shutdown method to attempt to gracefully shutdown.
-func (s *Server) ListenAndServe() error {
+func (s *Server) ListenAndServe(ctx context.Context) error {
 	select {
 	case err := <-s.delegateListenAndServe():
 		return err
+	case <-ctx.Done():
+		return s.shutdownDelegate(ctx)
 	case <-s.shutdown:
-		return s.shutdownDelegate()
+		return s.shutdownDelegate(ctx)
 	}
 }
 
@@ -80,12 +82,12 @@ func (s *Server) delegateListenAndServe() chan error {
 	return listenErr
 }
 
-func (s *Server) shutdownDelegate() error {
-	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+func (s *Server) shutdownDelegate(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
 	if err := s.delegate.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
 		return err
 	}
-	return nil
+	return ctx.Err()
 }
